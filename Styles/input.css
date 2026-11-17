@@ -1,0 +1,129 @@
+@import "tailwindcss";
+
+/* Tailwind scans the Razor views and the dashboard script for class names. */
+@source "../Views";
+@source "../wwwroot/js";
+
+/* IBM Plex Sans (latin subset), self-hosted so the wallboard works without internet access. */
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: normal;
+  font-weight: 100 700;
+  font-display: swap;
+  src: url("../fonts/plex-sans-latin.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "IBM Plex Sans Condensed";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("../fonts/plex-sans-condensed-600-latin.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "IBM Plex Sans Condensed";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("../fonts/plex-sans-condensed-700-latin.woff2") format("woff2");
+}
+
+:root {
+  --background: #f8fafc;
+  --foreground: #0a1b2e;
+  --font-plex-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-plex-sans-condensed: "IBM Plex Sans Condensed", "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-plex-sans);
+  --font-condensed: var(--font-plex-sans-condensed);
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-plex-sans), sans-serif;
+}
+
+/* =========================================================
+   LOCAL ANIMATION
+   Slow movement, with reduced-motion fallback.
+========================================================= */
+
+@keyframes summaryWave {
+  0% {
+    transform: translateX(-6%) translateY(0);
+  }
+
+  50% {
+    transform: translateX(0%) translateY(-4px);
+  }
+
+  100% {
+    transform: translateX(6%) translateY(0);
+  }
+}
+
+@keyframes summaryWaveSlow {
+  0% {
+    transform: translateX(5%) translateY(2px);
+  }
+
+  50% {
+    transform: translateX(0%) translateY(-2px);
+  }
+
+  100% {
+    transform: translateX(-5%) translateY(2px);
+  }
+}
+
+.animate-summary-wave {
+  animation: summaryWave 12s ease-in-out infinite alternate;
+}
+
+.animate-summary-wave-slow {
+  animation: summaryWaveSlow 16s ease-in-out infinite alternate;
+}
+
+@keyframes overdue-glow {
+
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px rgba(255, 51, 79, 0.35),
+      0 0 12px rgba(255, 51, 79, 0.40),
+      0 0 26px rgba(255, 51, 79, 0.25);
+  }
+
+  50% {
+    box-shadow:
+      0 0 0 3px rgba(255, 51, 79, 0.65),
+      0 0 20px rgba(255, 51, 79, 0.75),
+      0 0 42px rgba(255, 51, 79, 0.45);
+  }
+}
+
+.animate-overdue-glow {
+  animation: overdue-glow 1.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .animate-summary-wave,
+  .animate-summary-wave-slow,
+  .animate-overdue-glow {
+    animation: none;
+  }
+}

@@ -28,13 +28,13 @@ SMMS Workshop Service Monitoring Dashboard (OMP RFID): industrial heavy equipmen
 
 - **Bay Monitoring**: Dedicated real-time view for 4 workshop bays: `BAY 01`, `BAY 02`, `BAY 07`, and `BAY 08`.
 - **Equipment & Service Telemetry**: Focused on HD875-series heavy equipment. Displays bay number, equipment ID, HD875 equipment context, equipment visual, service status (`IN SERVICE`, `COMPLETE`, `OVERDUE`), service progress (when available), and service timing (when available), plus live header date/time.
-- **Data Source**: Initial phase uses mock/dummy data decoupled in `data/dummyBays.ts`. RFID hardware readers, backend APIs, and database integration will be connected in later phases without altering the UI contract.
+- **Data Source**: Initial phase uses mock/dummy data decoupled in `OmpRfidDashboard/Data/DummyBays.cs` (fallback when the API is unavailable). RFID hardware readers, backend APIs, and database integration will be connected in later phases without altering the UI contract.
 - **Visual Direction**: Clean, modern, professional, slightly futuristic industrial design with a comfortable light/neutral background, dark navy/charcoal text, restrained brand accents, and redundant status indicators (color + icon + text: IN SERVICE = green, COMPLETE = blue/teal, OVERDUE = red).
-- **Stack**: Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4.
+- **Stack**: ASP.NET Core MVC (.NET 10), C#, Razor views, Tailwind CSS v4 (build-time only), vanilla JavaScript.
 
 ## Evidence on Hand
 
-- Project repository scaffolded with Next.js 16 and Tailwind CSS v4.
+- Project repository is an ASP.NET Core MVC (.NET 10) application styled with Tailwind CSS v4.
 - Defined bay configuration: 4 target bays (`BAY 01`, `BAY 02`, `BAY 07`, `BAY 08`).
 - Defined status vocabulary: `IN SERVICE`, `COMPLETE`, `OVERDUE`.
 - RFID reader hardware and backend APIs are pending future phases (must use realistic mock telemetry without fabricating external connections).

@@ -1,0 +1,26 @@
+@using OmpRfidDashboard.Models
+@model ServiceStatus
+
+@* Compact operational status indicator: icon + text + restrained colour. Small size variant. *@
+@if (Model == ServiceStatus.Overdue)
+{
+    <div class="inline-flex items-center rounded-[6px] border font-medium leading-none tracking-[0.06em] whitespace-nowrap bg-[#FFF5F6] border-[#E6AAB1] text-[#B63845] px-2 py-1 text-[10px] gap-1.5"
+         role="status" aria-label="Service status: OVERDUE">
+        <svg class="h-3.5 w-3.5 shrink-0 text-[#C23C49]" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 18.75h.007v.008H12v-.008z" />
+        </svg>
+        <span>OVERDUE</span>
+    </div>
+}
+else
+{
+    <div class="inline-flex items-center rounded-[6px] border font-medium leading-none tracking-[0.06em] whitespace-nowrap bg-[#F2FBF7] border-[#9AD9C3] text-[#147A5A] px-2 py-1 text-[10px] gap-1.5"
+         role="status" aria-label="Service status: IN SERVICE">
+        <svg class="h-3.5 w-3.5 shrink-0 text-[#16845F]" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+        </svg>
+        <span>IN SERVICE</span>
+    </div>
+}

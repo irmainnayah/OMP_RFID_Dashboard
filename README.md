@@ -1,155 +1,168 @@
 # OMP RFID Dashboard
 
-## Project Overview
+Dashboard pemantauan servis bengkel (SMMS Workshop) untuk alat berat. Menampilkan okupansi bay,
+ID unit, mekanik, waktu mulai, estimasi selesai, countdown, dan status overdue dalam satu layar.
+Target tampilan adalah Smart Display 16:9 (1920 × 1080); ini ukuran target, bukan batasan teknis.
 
-OMP RFID Dashboard is a workshop service monitoring dashboard for heavy equipment maintenance operations. It presents bay occupancy, equipment identifiers, service timing, and overdue status on a single screen. The intended display is a 16:9 Smart Display at 1920 × 1080; these are target dimensions, not technical runtime restrictions.
+Aplikasi ini adalah **ASP.NET Core MVC (.NET 10, C#)**.
 
-The application currently loads bay data through a server-side API request and includes local dummy data as a fallback. Although the dashboard is intended for real-time operational monitoring, it does not automatically poll the API for updated service records.
+## Fitur
 
-## Project Objectives
+- 8 kartu bay: PARKIRAN DALAM (BAY 01, 02, 07, 08) dan PARKIRAN LUAR (BAY 01, 02, 07, 08).
+- Ringkasan: total, in service, overdue, dan kosong.
+- Per kartu: ID unit, mekanik, jam mulai, estimasi selesai, countdown `HH:MM:SS` (`-HH:MM:SS` setelah lewat target).
+- Jam dan tanggal di header, diperbarui tiap detik.
+- Fallback ke data dummy jika API gagal atau responsnya tidak valid.
 
-- Give workshop teams a single view of indoor and outdoor bay activity.
-- Make active service, overdue work, and empty bays easy to scan from a wall display.
-- Present equipment and service timing information in a consistent bay-card layout.
+Halaman tidak polling API. Countdown dan summary diperbarui di browser dari data yang sudah dimuat;
+muat ulang halaman untuk mengambil data terbaru.
 
-## Key Features
+## Teknologi
 
-- Eight bay cards, grouped into indoor and outdoor sections.
-- Summary counts for total, in-service, overdue, and empty bays.
-- Equipment identifier, assigned mechanic, start time, estimated finish, and countdown when the data is available.
-- Header date and clock, with the displayed time refreshed every second.
-- Local dummy-data fallback when the API request fails or its response does not contain the expected success flag and data array.
-- Responsive card grids that adapt to smaller viewport widths.
-
-## Dashboard Layout
-
-The page is arranged as a header, a four-metric summary bar, and two bay sections. The indoor section contains BAY 01, BAY 02, BAY 07, and BAY 08. The outdoor section contains the same four bay numbers, for eight cards total.
-
-Each populated card can show the bay number, service status, equipment ID and image, assigned mechanic, start time, estimated finish, and a countdown. Empty bays show an empty-state label. The summary bar counts total bays, active service, overdue service, and empty bays.
-
-## Technology Stack
-
-Versions below come from `package.json` and the lockfile. Ranges are shown where the project declares a range rather than a pinned version.
-
-| Technology | Declared version |
+| Komponen | Keterangan |
 | --- | --- |
-| Next.js | 16.3.8 |
-| React | 19.2.8 |
-| React DOM | 19.2.8 |
-| TypeScript | `^5` |
-| Tailwind CSS | `^4` |
-| ESLint | `^9` |
+| .NET 10 SDK | ASP.NET Core MVC, C# |
+| Razor | View dan partial view |
+| JavaScript (vanilla) | `wwwroot/js/dashboard.js`: jam, countdown, summary |
+| Tailwind CSS v4 | Hanya saat membangun `site.css` (tooling, bukan runtime) |
+| xUnit | Unit test |
 
-The application uses the Next.js App Router, with route content in `app/`. Tailwind CSS is integrated through its PostCSS plugin.
-
-## Project Structure
+## Struktur folder
 
 ```text
-app/
-  globals.css                 Global styles and local animations
-  layout.tsx                  Root layout, fonts, and page metadata
-  page.tsx                    Dashboard page and data loading
-components/
-  dashboard/
-    BayCard.tsx               Individual bay card and countdown
-    BayGrid.tsx               Indoor and outdoor bay sections
-    EquipmentVisual.tsx       Equipment image display
-    FooterLegend.tsx          Legacy component; currently renders nothing
-    Header.tsx                 Dashboard title and live date/clock
-    StatusBadge.tsx           Service status indicator
-    SummaryBar.tsx             Aggregate bay counts
-data/
-  dummyBays.ts                Local fallback bay dataset
-public/
-  images/                     Dashboard logo and equipment images
-services/
-  bayMapping.ts                Maps API records to the eight bay cards
-  bayService.ts                API request, fallback, and summaries
-tests/
-  bayMapping.test.ts           Mapping tests (node:test)
-types/
-  bay.ts                       Bay and summary data types
+OmpRfidDashboard.csproj               Project web MVC (net10.0)
+Program.cs                            Konfigurasi aplikasi dan HttpClient
+appsettings.json                      BayApi:Url
+Controllers/HomeController.cs         Mengambil data, menghitung summary, merender view
+Models/                               BayData, BaySummary, DashboardViewModel
+Services/
+  BayService.cs                       Request API, validasi respons, fallback
+  BayMapper.cs                        Mapping location_bays ke 8 kartu (fungsi murni)
+  BaySummaryCalculator.cs             Perhitungan summary
+Data/DummyBays.cs                     Data fallback
+Views/Home/Index.cshtml               Halaman dashboard
+Views/Shared/                         _Layout, _Header, _SummaryBar, _BayGrid, _BayCard,
+                                      _StatusBadge, _EquipmentVisual
+Styles/input.css                      Sumber CSS (Tailwind dan animasi)
+wwwroot/css/site.css                  CSS hasil build (disertakan di repository)
+wwwroot/js/dashboard.js
+wwwroot/images, wwwroot/fonts         Aset (font IBM Plex disimpan lokal)
+OmpRfidDashboard.Tests/               Unit test xUnit
 ```
 
-Root configuration includes `package.json`, `package-lock.json`, `next.config.ts`, `tsconfig.json`, `postcss.config.mjs`, and `eslint.config.mjs`.
+## Persyaratan
 
-## Data Flow and API Integration
+- [.NET 10 SDK](https://dotnet.microsoft.com/download)
+- Node.js hanya jika ingin membangun ulang CSS (lihat bagian terakhir).
 
-1. `app/page.tsx` calls `getBays()` from `services/bayService.ts` on the server when the page is requested.
-2. The service sends an HTTP request to the project’s configured upstream API and includes the `API_KEY` environment variable in the request header. The upstream address is defined in the service code and is not configurable through an environment variable.
-3. The service expects a successful response with a `success` field and a `data` array. It passes the records to `services/bayMapping.ts`, which reads the `location_bays` field and requires both a bay number (01, 02, 07, 08) and a location (`DALAM` or `LUAR`) to match a card. Equipment, mechanic, start time, and estimated finish fields are then mapped into the dashboard’s bay model.
-4. The mapper always returns exactly eight cards. A card with no matching record stays empty. A record that cannot be recognized is skipped. If several records target the same card, none is used: the card stays empty. The service logs one summary line per request with the number of unrecognized and duplicate records, and no record contents.
-5. If the request fails, returns a non-success HTTP status, or has an unexpected response shape, the service uses `data/dummyBays.ts` instead.
-6. The page calculates the initial summary and passes the data to client-side dashboard components.
-
-The request uses `cache: 'no-store'`, so Next.js does not serve a cached result for that fetch. However, the browser does not poll or automatically re-request the API. Client-side clocks, countdowns, and summary calculations update every second using the data already loaded. Updated service records require a new page request or reload.
-
-## Environment Configuration
-
-The service reads `API_KEY` from the server environment and sends its value in the API request header. Keep the value private and do not commit real credentials. The upstream API address is hard-coded in `services/bayService.ts`.
-
-Create a local `.env` file in the project root and set the variable:
-
-```dotenv
-API_KEY=
-```
-
-Add the value supplied for your environment after `=`. The repository includes `.env.example` as a variable-name template. The application sends an empty string if `API_KEY` is not set; whether the upstream service accepts that request depends on that service’s configuration.
-
-## Installation and Setup
-
-Install the dependencies recorded in the lockfile:
+## Menjalankan
 
 ```bash
-npm ci
+dotnet restore
+dotnet run
 ```
 
-Create `.env` with the `API_KEY` value if API access is configured for your environment. No Node.js version is declared by the project, so use a version supported by the installed Next.js release and your deployment environment.
+Buka `http://localhost:5005`.
 
-## Development
+## Konfigurasi
 
-Start the development server:
+| Pengaturan | Sumber | Keterangan |
+| --- | --- | --- |
+| `BayApi:Url` | `appsettings.json` | Alamat API bay. |
+| `API_KEY` | Environment variable atau User Secrets | Dikirim sebagai header `x-api-key`. Tidak pernah di-log. |
+
+Aplikasi tidak membaca file `.env`. Jangan menaruh nilai `API_KEY` di source code atau repository.
+
+**Environment variable** (PowerShell):
+
+```powershell
+$env:API_KEY = "<isi key>"
+dotnet run
+```
+
+**User Secrets** (pengembangan lokal):
 
 ```bash
-npm run dev
+dotnet user-secrets init
+dotnet user-secrets set API_KEY "<isi key>"
 ```
 
-Open `http://localhost:3000` in a browser. The server loads bay data for each page request. Refresh the page to request updated API data.
+Alamat API dapat diganti lewat environment variable `BayApi__Url` tanpa mengubah file.
 
-Run the configured lint command with:
+## Alur data
+
+```text
+Browser -> HomeController.Index -> IBayService (BayService) -> BayMapper -> DashboardViewModel -> Razor view
+```
+
+1. `HomeController.Index` memanggil `GetBaysAsync()` pada setiap request. Respons dikirim dengan `no-store`.
+2. `BayService` memanggil API dengan header `x-api-key` dan timeout 15 detik, lalu memvalidasi respons
+   (`success` benar dan `data` berupa array).
+3. `BayMapper` membaca `location_bays` dan mencocokkan nomor bay (01, 02, 07, 08) dan lokasi
+   (DALAM atau LUAR) secara bersamaan. Hasilnya selalu tepat 8 kartu.
+   - Record yang nomor atau lokasinya tidak dikenal dilewati.
+   - Jika ada beberapa record untuk satu kartu, tidak ada yang dipilih: kartu dibiarkan kosong.
+   - Kartu tanpa record tetap kosong.
+   - Log hanya berisi jumlah, misalnya `Bay mapping issues: 1 unrecognized, 1 duplicate`.
+4. `BaySummaryCalculator` menghitung summary, dan `DashboardViewModel` membagi kartu menjadi baris DALAM dan LUAR.
+5. View Razor merender halaman. `dashboard.js` menjalankan jam, countdown, status overdue, dan summary tiap detik.
+
+Pemetaan field: `unit_number` ke `EquipmentId`, `assigned_mechanics` ke `Mechanic`,
+`plan_start_time` ke `StartService`, `estimade_rfu` ke `TargetFinish` dan `TargetFinishDate`.
+
+Status: `IN SERVICE` bila waktu estimasi belum lewat, `OVERDUE` bila sudah lewat, dan kartu kosong
+bila tidak ada record. Tidak ada status `COMPLETE`.
+
+### Fallback DummyBays
+
+`Data/DummyBays.cs` dipakai bila request gagal, status HTTP bukan sukses, respons bukan JSON valid,
+atau `success`/`data` tidak sesuai. Data dummy berisi 3 bay DALAM yang terisi dan 5 bay kosong.
+
+## Unit test
 
 ```bash
-npm run lint
+dotnet test OmpRfidDashboard.Tests
 ```
 
-Run the mapping tests (Node.js 22.18 or newer):
+Tes memakai handler HTTP palsu, jadi tidak ada request ke API asli. Cakupannya: mapping DALAM/LUAR,
+nomor sama di lokasi berbeda, urutan record, bay tanpa data, data tidak dikenal, duplikat, validasi
+respons, header `x-api-key`, fallback, dan summary.
+
+## Production build dan deployment
 
 ```bash
-npm test
+dotnet publish OmpRfidDashboard.csproj -c Release -o publish
 ```
 
-## Production Build and Deployment
-
-Create a production build:
+Jalankan hasil publish:
 
 ```bash
-npm run build
+cd publish
+dotnet OmpRfidDashboard.dll --urls http://0.0.0.0:5005
 ```
 
-Run the built application with:
+Catatan deployment:
+
+- Server membutuhkan **ASP.NET Core Runtime 10** dan akses jaringan ke API.
+- Atur `API_KEY` (dan bila perlu `BayApi__Url`) sebagai environment variable di server atau di
+  konfigurasi IIS/service. Jangan menaruhnya di repository.
+- Untuk IIS, instal ASP.NET Core Hosting Bundle dan arahkan site ke folder `publish`.
+- Aplikasi tidak memakai HTTPS secara bawaan di konfigurasi ini; pasang di belakang reverse proxy
+  atau atur sertifikat sesuai kebijakan jaringan.
+
+## Membangun ulang CSS
+
+`wwwroot/css/site.css` sudah disertakan, jadi menjalankan aplikasi tidak membutuhkan Node.js.
+Bangun ulang hanya setelah mengubah class Tailwind di `Views/`, `wwwroot/js/`, atau `Styles/input.css`
+(butuh Node.js, tidak ada file Node di repository):
 
 ```bash
-npm run start
+npx @tailwindcss/cli@4 -i Styles/input.css -o wwwroot/css/site.css --minify
 ```
 
-The production runtime needs access to the upstream API and the `API_KEY` environment variable. Configure the secret in the hosting environment rather than committing it to the repository. The repository does not specify a deployment platform or deployment procedure; configure deployment according to the chosen host’s Next.js requirements.
+## Keterbatasan
 
-## Important Notes and Troubleshooting
-
-- **Data does not change automatically:** the dashboard does not poll the API. Reload or request the page again to load updated records.
-- **Dummy records appear:** check API availability, the server logs, and whether the response has `success: true` and a `data` array. Request failures and invalid response shapes use `DUMMY_BAYS`.
-- **API authentication fails:** confirm that `API_KEY` is set in the server environment and that the value is valid for the upstream service. Do not put the secret in client-side code.
-- **A card is empty although the API has data for it:** check the server log for `Bay mapping issues`. A record whose `location_bays` has no recognizable number and `DALAM`/`LUAR` location, or two records for the same bay and location, leave that card empty.
-- **Unverified API format:** the mapper expects `location_bays` values such as `BAY 01 DALAM` or `BAY 01 LUAR`. This format comes from the project requirements and has not been checked against the live server, so confirm it on the real API.
-- **Status values:** populated API bays are classified as `OVERDUE` when their estimated finish time has passed, otherwise as `IN_SERVICE`. Empty bays have a `null` status. The current API mapping does not produce a `COMPLETE` status.
-- **Target display size:** 16:9 at 1920 × 1080 is the intended wallboard target. The responsive layout can render at other viewport sizes, with a different number of columns on narrower screens.
+- Format `location_bays` yang didukung adalah `BAY 01 DALAM` / `BAY 01 LUAR` (nomor dan lokasi).
+  Format ini berasal dari persyaratan proyek dan harus diverifikasi terhadap server asli.
+  Jika berbeda, kartu akan kosong dan log menampilkan jumlah `unrecognized`.
+- Gambar peralatan disajikan dalam ukuran aslinya (tidak dioptimasi otomatis).

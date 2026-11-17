@@ -1,0 +1,13 @@
+﻿@model string
+@{
+    ViewData["Title"] = "Error";
+}
+
+<main class="flex min-h-screen flex-col items-center justify-center bg-[#0a1b2e] p-6 text-center text-white">
+    <h1 class="text-xl font-semibold">Dashboard unavailable</h1>
+    <p class="mt-2 text-sm text-slate-300">An error occurred while processing the request.</p>
+    @if (!string.IsNullOrEmpty(Model))
+    {
+        <p class="mt-4 text-xs text-slate-400">Request ID: <code>@Model</code></p>
+    }
+</main>

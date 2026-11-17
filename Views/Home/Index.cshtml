@@ -1,0 +1,13 @@
+﻿@model OmpRfidDashboard.Models.DashboardViewModel
+@{
+    Layout = "_Layout";
+}
+
+@* Full-screen landscape wallboard layout (16:9). Deep-navy to mist-blue background. *@
+<div class="relative flex min-h-screen flex-col overflow-hidden bg-gradient-to-b from-[#081A2D] via-[#173650] to-[#DCE7F1] lg:h-screen">
+    <div class="relative z-10 flex min-h-0 flex-1 flex-col">
+        <partial name="_Header" />
+        <partial name="_SummaryBar" model="Model.Summary" />
+        <partial name="_BayGrid" model="Model" />
+    </div>
+</div>
