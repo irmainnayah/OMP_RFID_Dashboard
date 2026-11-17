@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-02T16:18:00Z",
+  "title": "Design System: SMMS Workshop Service Monitoring Dashboard",
+  "extensions": {
+    "colorMeta": {
+      "neutral-bg": {
+        "role": "neutral",
+        "displayName": "Facility Ground",
+        "canonical": "#f8fafc"
+      },
+      "status-in-service": {
+        "role": "primary",
+        "displayName": "Service Green",
+        "canonical": "#059669"
+      },
+      "status-complete": {
+        "role": "secondary",
+        "displayName": "Precision Blue/Teal",
+        "canonical": "#0284c7"
+      },
+      "status-overdue": {
+        "role": "error",
+        "displayName": "Alert Red",
+        "canonical": "#e11d48"
+      }
+    }
+  },
+  "narrative": {
+    "northStar": "The Modern Workshop Command Board",
+    "overview": "The visual language is clean, modern, professional, slightly futuristic, and industrial, rejecting dark cyberpunk and neon glows for high-glanceability distance viewing under active facility lighting.",
+    "keyCharacteristics": [
+      "High-contrast charcoal and dark navy typography set against a calm, light neutral ground.",
+      "Tri-channel status semantics combining color, semantic SVG iconography, and explicit textual state names.",
+      "Decoupled presentation architecture ensuring mock telemetry can transition to live hardware RFID streams without visual redesign."
+    ],
+    "rules": [
+      {
+        "name": "The Tri-Channel Status Rule",
+        "body": "Status is never communicated by color alone. Every status representation must pair distinct color with an SVG icon and explicit text.",
+        "section": "colors"
+      }
+    ],
+    "dos": [
+      "Do maintain high text contrast (>= 4.5:1) across all elements.",
+      "Do format numeric times and percentages with tabular-nums.",
+      "Do keep summary counts dynamically computed from the active dataset."
+    ],
+    "donts": [
+      "Don't use dark-mode neon glows, matrix green, or glassmorphic blurs.",
+      "Don't rely on color alone to indicate equipment status.",
+      "Don't invent mandatory diagnostic fields such as RFID RSSI or technician names on this surface."
+    ]
+  }
+}

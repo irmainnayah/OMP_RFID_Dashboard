@@ -63,7 +63,10 @@ data/
 public/
   images/                     Dashboard logo and equipment images
 services/
-  bayService.ts                API request, mapping, fallback, and summaries
+  bayMapping.ts                Maps API records to the eight bay cards
+  bayService.ts                API request, fallback, and summaries
+tests/
+  bayMapping.test.ts           Mapping tests (node:test)
 types/
   bay.ts                       Bay and summary data types
 ```
@@ -74,8 +77,8 @@ Root configuration includes `package.json`, `package-lock.json`, `next.config.ts
 
 1. `app/page.tsx` calls `getBays()` from `services/bayService.ts` on the server when the page is requested.
 2. The service sends an HTTP request to the project’s configured upstream API and includes the `API_KEY` environment variable in the request header. The upstream address is defined in the service code and is not configurable through an environment variable.
-3. The service expects a successful response with a `success` field and a `data` array. It matches returned bay locations against the four configured indoor bay numbers and maps available equipment and service timing fields into the dashboard’s bay model.
-4. The service appends four empty outdoor bays. The current API mapping does not populate outdoor bay records.
+3. The service expects a successful response with a `success` field and a `data` array. It passes the records to `services/bayMapping.ts`, which reads the `location_bays` field and requires both a bay number (01, 02, 07, 08) and a location (`DALAM` or `LUAR`) to match a card. Equipment, mechanic, start time, and estimated finish fields are then mapped into the dashboard’s bay model.
+4. The mapper always returns exactly eight cards. A card with no matching record stays empty. A record that cannot be recognized is skipped. If several records target the same card, none is used: the card stays empty. The service logs one summary line per request with the number of unrecognized and duplicate records, and no record contents.
 5. If the request fails, returns a non-success HTTP status, or has an unexpected response shape, the service uses `data/dummyBays.ts` instead.
 6. The page calculates the initial summary and passes the data to client-side dashboard components.
 
@@ -119,6 +122,12 @@ Run the configured lint command with:
 npm run lint
 ```
 
+Run the mapping tests (Node.js 22.18 or newer):
+
+```bash
+npm test
+```
+
 ## Production Build and Deployment
 
 Create a production build:
@@ -140,6 +149,7 @@ The production runtime needs access to the upstream API and the `API_KEY` enviro
 - **Data does not change automatically:** the dashboard does not poll the API. Reload or request the page again to load updated records.
 - **Dummy records appear:** check API availability, the server logs, and whether the response has `success: true` and a `data` array. Request failures and invalid response shapes use `DUMMY_BAYS`.
 - **API authentication fails:** confirm that `API_KEY` is set in the server environment and that the value is valid for the upstream service. Do not put the secret in client-side code.
-- **Outdoor cards remain empty:** this is the current service behavior. The API response is mapped only to indoor bays; outdoor bays are appended as empty placeholders.
+- **A card is empty although the API has data for it:** check the server log for `Bay mapping issues`. A record whose `location_bays` has no recognizable number and `DALAM`/`LUAR` location, or two records for the same bay and location, leave that card empty.
+- **Unverified API format:** the mapper expects `location_bays` values such as `BAY 01 DALAM` or `BAY 01 LUAR`. This format comes from the project requirements and has not been checked against the live server, so confirm it on the real API.
 - **Status values:** populated API bays are classified as `OVERDUE` when their estimated finish time has passed, otherwise as `IN_SERVICE`. Empty bays have a `null` status. The current API mapping does not produce a `COMPLETE` status.
 - **Target display size:** 16:9 at 1920 × 1080 is the intended wallboard target. The responsive layout can render at other viewport sizes, with a different number of columns on narrower screens.
